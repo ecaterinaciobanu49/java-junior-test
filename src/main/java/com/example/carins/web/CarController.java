@@ -2,8 +2,12 @@ package com.example.carins.web;
 
 import com.example.carins.exception.CarNotFoundException;
 import com.example.carins.model.Car;
+import com.example.carins.model.InsuranceClaim;
 import com.example.carins.service.CarService;
 import com.example.carins.web.dto.CarDto;
+import com.example.carins.web.dto.InsuranceClaimDto;
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,17 +32,24 @@ public class CarController {
 
     @GetMapping("/cars/{carId}/insurance-valid")
     public ResponseEntity<?> isInsuranceValid(@PathVariable Long carId, @RequestParam String date) {
-        if (carId == null) {
-            return ResponseEntity.badRequest().body("Car id must not be null");
-        }
-
         try {
             LocalDate d = LocalDate.parse(date);
             boolean valid = service.isInsuranceValid(carId, d);
             return ResponseEntity.ok(new InsuranceValidityResponse(carId, d.toString(), valid));
         } catch (DateTimeParseException e) {
-            return ResponseEntity.badRequest().body("Provided date format " + date +" is invalid");
-        } catch (CarNotFoundException e) {
+            return ResponseEntity.badRequest().body("Provided date format " + date + " is invalid");
+        } catch (IllegalArgumentException | CarNotFoundException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/cars/{carId}/claims")
+    public ResponseEntity<?> addNewInsuranceClaim(@PathVariable Long carId, @RequestBody InsuranceClaimDto insuranceClaimDto) {
+        try {
+            InsuranceClaim insuranceClaim = service.createInsuranceClaim(carId, insuranceClaimDto);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new InsuranceClaimInsertionResponse(carId, insuranceClaim));
+        } catch (IllegalArgumentException | CarNotFoundException | ConstraintViolationException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -51,5 +62,9 @@ public class CarController {
                 o != null ? o.getEmail() : null);
     }
 
-    public record InsuranceValidityResponse(Long carId, String date, boolean valid) {}
+    public record InsuranceValidityResponse(Long carId, String date, boolean valid) {
+    }
+
+    public record InsuranceClaimInsertionResponse(Long carId, InsuranceClaim insuranceClaimDto) {
+    }
 }

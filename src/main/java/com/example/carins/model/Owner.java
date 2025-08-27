@@ -1,11 +1,13 @@
 package com.example.carins.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "owner")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Owner {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

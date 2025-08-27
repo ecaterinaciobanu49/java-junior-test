@@ -3,6 +3,7 @@ package com.example.carins.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.hibernate.validator.constraints.UniqueElements;
 
 @Entity
 @Table(name = "car")
@@ -10,7 +11,7 @@ public class Car {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank @Size(min = 5, max = 32)
+    @NotBlank @Size(min = 5, max = 32) @UniqueElements
     private String vin;
 
     private String make;
