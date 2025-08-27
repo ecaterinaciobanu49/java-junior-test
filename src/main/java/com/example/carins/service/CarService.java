@@ -7,12 +7,15 @@ import com.example.carins.repo.CarRepository;
 import com.example.carins.repo.InsuranceClaimRepository;
 import com.example.carins.repo.InsurancePolicyRepository;
 import com.example.carins.service.mapper.Mapper;
+import com.example.carins.web.dto.CarEventDto;
+import com.example.carins.web.dto.CarEventType;
 import com.example.carins.web.dto.InsuranceClaimDto;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -60,5 +63,59 @@ public class CarService {
         insuranceClaim.setCar(car);
 
         return claimRepository.save(insuranceClaim);
+    }
+
+    public List<CarEventDto> getCarEvents(Long carId) {
+        if (carId == null) {
+            throw new IllegalArgumentException("Car ID must not be null");
+        }
+        if (!carRepository.existsById(carId)) {
+            throw new CarNotFoundException("Car with id " + carId + " does not exist");
+        }
+        List<CarEventDto> claimEvents = claimRepository.findAllByCarIdOrderByDate(carId).stream()
+                .map(c -> new CarEventDto(
+                        CarEventType.CLAIM,
+                        c.getClaimDate().toInstant()
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toLocalDate(),
+                        "Insurance claim",
+                        c.getDescription(),
+                        c.getId()
+                ))
+                .toList();
+
+        List<CarEventDto> policyEvents = policyRepository.findAllByCarIdOrderByStartDate(carId).stream()
+                .flatMap(p -> {
+                    List<CarEventDto> list = new java.util.ArrayList<>();
+                    if (p.getStartDate() != null) {
+                        list.add(new CarEventDto(
+                                CarEventType.POLICY_START,
+                                p.getStartDate(),
+                                "Policy started",
+                                p.getProvider(),
+                                p.getId()
+                        ));
+                    }
+                    if (p.getEndDate() != null) {
+                        list.add(new CarEventDto(
+                                CarEventType.POLICY_END,
+                                p.getEndDate(),
+                                "Policy ended",
+                                p.getProvider(),
+                                p.getId()
+                        ));
+                    }
+                    return list.stream();
+                })
+                .toList();
+
+        List<CarEventDto> allEvents = new java.util.ArrayList<>(claimEvents.size() + policyEvents.size());
+        allEvents.addAll(claimEvents);
+        allEvents.addAll(policyEvents);
+        allEvents.sort(java.util.Comparator
+                .comparing(CarEventDto::date)
+                .thenComparing(e -> e.type().name()));
+
+        return allEvents;
     }
 }

@@ -5,6 +5,7 @@ import com.example.carins.model.Car;
 import com.example.carins.model.InsuranceClaim;
 import com.example.carins.service.CarService;
 import com.example.carins.web.dto.CarDto;
+import com.example.carins.web.dto.CarEventDto;
 import com.example.carins.web.dto.InsuranceClaimDto;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -43,6 +45,16 @@ public class CarController {
         }
     }
 
+    @GetMapping("/cars/{carId}/history")
+    public ResponseEntity<?> getCarEvents(@PathVariable Long carId) {
+       try {
+           List<CarEventDto> events = service.getCarEvents(carId);
+           return ResponseEntity.ok(new CarEventResponse(carId, events));
+       } catch (CarNotFoundException e) {
+           return ResponseEntity.notFound().build();
+       }
+    }
+
     @PostMapping("/cars/{carId}/claims")
     public ResponseEntity<?> addNewInsuranceClaim(@PathVariable Long carId, @RequestBody InsuranceClaimDto insuranceClaimDto) {
         try {
@@ -66,5 +78,8 @@ public class CarController {
     }
 
     public record InsuranceClaimInsertionResponse(Long carId, InsuranceClaim insuranceClaimDto) {
+    }
+
+    public record CarEventResponse(Long carId, List<CarEventDto> carEvents) {
     }
 }
