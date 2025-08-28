@@ -11,7 +11,6 @@ import com.example.carins.repo.InsurancePolicyRepository;
 import com.example.carins.web.dto.CarEventDto;
 import com.example.carins.web.dto.InsuranceClaimDto;
 import jakarta.validation.ConstraintViolationException;
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,34 +63,34 @@ class CarServiceTest {
         Mockito.when(policyRepository.existsActiveOnDate(anyLong(), any())).thenReturn(true);
 
         boolean isValid = carService.isInsuranceValid(1L, LocalDate.parse("2024-03-03"));
-        Assert.assertTrue(isValid);
+        Assertions.assertTrue(isValid);
     }
 
     @Test
     void When_CarDoesNotExist_ExpectIsInsuranceValid_ThrowCarNotFoundException() {
         Mockito.when(policyRepository.findByCarId(anyLong())).thenReturn(Collections.emptyList());
 
-        Assert.assertThrows(CarNotFoundException.class, () -> carService.isInsuranceValid(1L, LocalDate.parse("2024-03-03")));
+        Assertions.assertThrows(CarNotFoundException.class, () -> carService.isInsuranceValid(1L, LocalDate.parse("2024-03-03")));
     }
 
     @Test
     void When_CarIdIsNull_ExpectIsInsuranceValid_ThrowIllegalArgumentException() {
-        Assert.assertThrows(IllegalArgumentException.class, () -> carService.isInsuranceValid(null, LocalDate.parse("2024-03-03")));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> carService.isInsuranceValid(null, LocalDate.parse("2024-03-03")));
     }
 
     @Test
     void When_DateIsTooEarly_ExpectIsInsuranceValid_ThrowIllegalArgumentException() {
-        Assert.assertThrows(IllegalArgumentException.class, () -> carService.isInsuranceValid(1L, LocalDate.parse("1899-03-03")));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> carService.isInsuranceValid(1L, LocalDate.parse("1899-03-03")));
     }
 
     @Test
     void When_DateIsTooLate_ExpectIsInsuranceValid_ThrowIllegalArgumentException() {
-        Assert.assertThrows(IllegalArgumentException.class, () -> carService.isInsuranceValid(1L, LocalDate.parse("2500-03-03")));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> carService.isInsuranceValid(1L, LocalDate.parse("2500-03-03")));
     }
 
     @Test
     void When_DateIsNull_ExpectIsInsuranceValid_ThrowIllegalArgumentException() {
-        Assert.assertThrows(IllegalArgumentException.class, () -> carService.isInsuranceValid(1L, null));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> carService.isInsuranceValid(1L, null));
     }
 
 
@@ -107,23 +106,23 @@ class CarServiceTest {
 
     @Test
     void When_CarIdIsNull_ExpectExpectCreateInsuranceClaim_ThrowIllegalArgumentException() {
-        Assert.assertThrows(IllegalArgumentException.class, () -> carService.createInsuranceClaim(null, new InsuranceClaimDto(new Date(), "ACCIDENT", 20000)));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> carService.createInsuranceClaim(null, new InsuranceClaimDto(new Date(), "ACCIDENT", 20000)));
     }
 
     @Test
     void When_InsuranceClaimDtoNotValid_ExpectExpectCreateInsuranceClaim_ThrowConstraintViolationException() {
-        Assert.assertThrows(ConstraintViolationException.class, () -> carService
+        Assertions.assertThrows(ConstraintViolationException.class, () -> carService
                 .createInsuranceClaim(1L, new InsuranceClaimDto(null, "ACCIDENT", 20000)));
     }
 
     @Test
     void When_CarIdIsNull_ExpectGetCarEvents_ThrowIllegalArgumentException() {
-        Assert.assertThrows(IllegalArgumentException.class, () -> carService.getCarEvents(null));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> carService.getCarEvents(null));
     }
 
     @Test
     void When_CarDoesNotExist_ExpectGetCarEvents_ThrowCarNotFoundException() {
-        Assert.assertThrows(CarNotFoundException.class, () -> carService.getCarEvents(1L));
+        Assertions.assertThrows(CarNotFoundException.class, () -> carService.getCarEvents(1L));
     }
 
     @Test

@@ -8,10 +8,13 @@ import org.hibernate.validator.constraints.UniqueElements;
 @Entity
 @Table(name = "car")
 public class Car {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "policy_seq")
+    @SequenceGenerator(name = "policy_seq", sequenceName = "policy_seq", initialValue = 10, allocationSize = 1)
     private Long id;
 
-    @NotBlank @Size(min = 5, max = 32) @UniqueElements
+    @Size(min = 5, max = 32)
+    @Column(nullable = false, unique = true)
     private String vin;
 
     private String make;

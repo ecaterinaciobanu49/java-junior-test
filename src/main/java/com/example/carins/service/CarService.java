@@ -1,16 +1,18 @@
 package com.example.carins.service;
 
 import com.example.carins.exception.CarNotFoundException;
+import com.example.carins.exception.OwnerNotFoundException;
 import com.example.carins.model.Car;
 import com.example.carins.model.InsuranceClaim;
+import com.example.carins.model.InsurancePolicy;
+import com.example.carins.model.Owner;
 import com.example.carins.repo.CarRepository;
 import com.example.carins.repo.InsuranceClaimRepository;
 import com.example.carins.repo.InsurancePolicyRepository;
+import com.example.carins.repo.OwnerRepository;
 import com.example.carins.service.mapper.Mapper;
 import com.example.carins.service.utils.DateUtils;
-import com.example.carins.web.dto.CarEventDto;
-import com.example.carins.web.dto.CarEventType;
-import com.example.carins.web.dto.InsuranceClaimDto;
+import com.example.carins.web.dto.*;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -26,11 +28,44 @@ public class CarService {
     private final CarRepository carRepository;
     private final InsurancePolicyRepository policyRepository;
     private final InsuranceClaimRepository claimRepository;
+    private final OwnerRepository ownerRepository;
 
-    public CarService(CarRepository carRepository, InsurancePolicyRepository policyRepository, InsuranceClaimRepository claimRepository) {
+    public CarService(CarRepository carRepository, InsurancePolicyRepository policyRepository, InsuranceClaimRepository claimRepository, OwnerRepository ownerRepository) {
         this.carRepository = carRepository;
         this.policyRepository = policyRepository;
         this.claimRepository = claimRepository;
+        this.ownerRepository = ownerRepository;
+    }
+
+    public InsurancePolicy insertNewInsurancePolicy(Long carId, InsurancePolicyDto insurancePolicyDto) {
+        if (carId == null) {
+            throw new IllegalArgumentException(CAR_ID_REQUIRED);
+        }
+        Car car = carRepository.findById(carId)
+                .orElseThrow(() -> new CarNotFoundException(carId));
+
+        if (!CollectionUtils.isEmpty(ClaimValidator.validatePolicy(insurancePolicyDto))) {
+            throw new ConstraintViolationException(ClaimValidator.validatePolicy(insurancePolicyDto));
+        }
+
+        InsurancePolicy insurancePolicy = Mapper.mapToInsurancePolicy(insurancePolicyDto);
+        insurancePolicy.setCar(car);
+
+        return policyRepository.save(insurancePolicy);
+    }
+
+    public Car addNewCar(CarDto  carDto) {
+        if (!CollectionUtils.isEmpty(ClaimValidator.validateCar(carDto))) {
+            throw new ConstraintViolationException(ClaimValidator.validateCar(carDto));
+        }
+
+        Owner owner = ownerRepository.findById(carDto.ownerId())
+                .orElseThrow(() -> new OwnerNotFoundException(carDto.ownerId()));
+
+        Car car = Mapper.mapToCar(carDto);
+        car.setOwner(owner);
+
+        return carRepository.save(car);
     }
 
     public List<Car> listCars() {

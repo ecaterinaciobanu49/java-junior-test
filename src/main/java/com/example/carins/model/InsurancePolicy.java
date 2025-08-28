@@ -8,7 +8,9 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "insurancepolicy")
 public class InsurancePolicy {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "policy_seq")
+    @SequenceGenerator(name = "policy_seq", sequenceName = "policy_seq", initialValue = 10, allocationSize = 1)
     private Long id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
