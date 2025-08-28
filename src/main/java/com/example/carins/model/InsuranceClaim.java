@@ -25,51 +25,28 @@ public class InsuranceClaim {
     public InsuranceClaim() {
     }
 
-    public InsuranceClaim(Long id, Car car, Date claimDate, String description, double amount) {
-        this.id = id;
+    public InsuranceClaim(Car car, Date claimDate, String description, double amount) {
         this.car = car;
         this.claimDate = claimDate;
         this.description = description;
         this.amount = amount;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public Long getId() { return id;}
 
-    public Long getId() {
-        return id;
-    }
+    public Car getCar() { return car; }
 
-    public Car getCar() {
-        return car;
-    }
+    public void setCar(Car car) { this.car = car; }
 
-    public void setCar(Car car) {
-        this.car = car;
-    }
+    public Date getClaimDate() { return claimDate;}
 
-    public Date getClaimDate() {
-        return claimDate;
-    }
+    public void setClaimDate(Date claimDate) { this.claimDate = claimDate; }
 
-    public void setClaimDate(Date claimDate) {
-        this.claimDate = claimDate;
-    }
+    public String getDescription() { return description; }
 
-    public String getDescription() {
-        return description;
-    }
+    public void setDescription(String description) { this.description = description; }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public double getAmount() { return amount; }
 
-    public double getAmount() {
-        return amount;
-    }
-
-    public void setAmount(double amount) {
-        this.amount = amount;
-    }
+    public void setAmount(double amount) { this.amount = amount; }
 }
