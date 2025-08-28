@@ -7,6 +7,7 @@ import com.example.carins.repo.CarRepository;
 import com.example.carins.repo.InsuranceClaimRepository;
 import com.example.carins.repo.InsurancePolicyRepository;
 import com.example.carins.service.mapper.Mapper;
+import com.example.carins.service.utils.DateUtils;
 import com.example.carins.web.dto.CarEventDto;
 import com.example.carins.web.dto.CarEventType;
 import com.example.carins.web.dto.InsuranceClaimDto;
@@ -15,8 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
+
+import static com.example.carins.service.ValidationMessages.CAR_ID_REQUIRED;
 
 @Service
 public class CarService {
@@ -36,12 +38,13 @@ public class CarService {
     }
 
     public boolean isInsuranceValid(Long carId, LocalDate date) {
+        DateUtils.checkDateErrors(date);
         if (carId == null) {
-            throw new IllegalArgumentException("Car ID must not be null");
+            throw new IllegalArgumentException(CAR_ID_REQUIRED);
         }
 
         if (CollectionUtils.isEmpty(policyRepository.findByCarId(carId))) {
-            throw new CarNotFoundException("Car with id " + carId + " does not exist");
+            throw new CarNotFoundException(carId);
         }
 
         return policyRepository.existsActiveOnDate(carId, date);
@@ -49,7 +52,7 @@ public class CarService {
 
     public InsuranceClaim createInsuranceClaim(Long carId, InsuranceClaimDto claim) {
         if (carId == null) {
-            throw new IllegalArgumentException("Car ID must not be null");
+            throw new IllegalArgumentException(CAR_ID_REQUIRED);
         }
 
         if (!CollectionUtils.isEmpty(ClaimValidator.validate(claim))) {
@@ -57,7 +60,7 @@ public class CarService {
         }
 
         Car car = carRepository.findById(carId)
-                    .orElseThrow(() -> new CarNotFoundException("Car with id " + carId + " does not exist"));
+                    .orElseThrow(() -> new CarNotFoundException(carId));
 
         InsuranceClaim insuranceClaim = Mapper.mapToInsuranceClaim(claim);
         insuranceClaim.setCar(car);
@@ -67,10 +70,10 @@ public class CarService {
 
     public List<CarEventDto> getCarEvents(Long carId) {
         if (carId == null) {
-            throw new IllegalArgumentException("Car ID must not be null");
+            throw new IllegalArgumentException(CAR_ID_REQUIRED);
         }
         if (!carRepository.existsById(carId)) {
-            throw new CarNotFoundException("Car with id " + carId + " does not exist");
+            throw new CarNotFoundException(carId);
         }
         List<CarEventDto> claimEvents = claimRepository.findAllByCarIdOrderByDate(carId).stream()
                 .map(c -> new CarEventDto(

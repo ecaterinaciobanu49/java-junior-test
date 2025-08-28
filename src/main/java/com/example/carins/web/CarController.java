@@ -14,8 +14,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 import java.util.List;
+
+import static com.example.carins.service.ValidationMessages.INVALID_DATE_FORMAT;
 
 @RestController
 @RequestMapping("/api")
@@ -39,9 +40,11 @@ public class CarController {
             boolean valid = service.isInsuranceValid(carId, d);
             return ResponseEntity.ok(new InsuranceValidityResponse(carId, d.toString(), valid));
         } catch (DateTimeParseException e) {
-            return ResponseEntity.badRequest().body("Provided date format " + date + " is invalid");
-        } catch (IllegalArgumentException | CarNotFoundException e) {
+            return ResponseEntity.badRequest().body(INVALID_DATE_FORMAT);
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (CarNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
@@ -51,7 +54,7 @@ public class CarController {
            List<CarEventDto> events = service.getCarEvents(carId);
            return ResponseEntity.ok(new CarEventResponse(carId, events));
        } catch (CarNotFoundException e) {
-           return ResponseEntity.notFound().build();
+           return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
        }
     }
 
@@ -61,8 +64,10 @@ public class CarController {
             InsuranceClaim insuranceClaim = service.createInsuranceClaim(carId, insuranceClaimDto);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new InsuranceClaimInsertionResponse(carId, insuranceClaim));
-        } catch (IllegalArgumentException | CarNotFoundException | ConstraintViolationException e) {
+        } catch (IllegalArgumentException | ConstraintViolationException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (CarNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
